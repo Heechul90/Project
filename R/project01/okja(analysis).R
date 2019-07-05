@@ -135,8 +135,7 @@ ggplot(month_score, aes(x= month, y= month_score_mean, fill= month)) +
   theme(axis.text.y = element_text(angle=0, size = 10, color='black')) +
   theme(legend.title = element_text(face="italic", colour="darkblue",size=10)) +
   geom_text(aes(y=month_score_mean - 0.2, label= paste(round(month_score_mean,1), '점')),
-            color='black', size=5) +
-  abline(h= 8)
+            color='black', size=5)
 
 # reorder(month, desc(month_score_mean)
 # aes(reorder(job, c('January','February','March','April','May','June','July','August','September','October','November','December'))
@@ -152,15 +151,16 @@ day_score
 ggplot(day_score, aes(x= day, y= day_score_mean, fill= day)) +
   geom_bar(stat = 'identity')
 
-# 03. 요금에 따른 평점
-fee_score <- okja %>%
-  select(fee, score) %>%
-  group_by(fee) %>%
-  summarise(fee_score_mean = mean(score))
-fee_score$fee <- as.character(fee_score$fee)
-fee_score
+# 03. 주말 시간에 따른 평점
+okja
+weekend_score <- okja %>%
+  filter(day %in% c('Friday', 'Saturday', 'Sunday')) %>%
+  select(time, score) %>%
+  group_by(time) %>%
+  summarise(weekend_score_mean = mean(score))
+weekend_score
 
-ggplot(fee_score, aes(x= fee, y= fee_score_mean, fill= fee)) +
+ggplot(weekend_score, aes(x= time, y= weekend_score_mean, fill= time)) +
   geom_bar(stat = 'identity')
 
 
