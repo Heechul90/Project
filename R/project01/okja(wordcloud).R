@@ -1,6 +1,6 @@
 ### 옥자평점 분석(naver)
 
-setwd('D:/Heechul/Project/R/project01/photo')
+setwd('D:/Heechul/Project/R/project01')
 
 ## 필요패키지
 library(KoNLP)
@@ -11,6 +11,7 @@ library(RColorBrewer)
 library(extrafont)
 library(wordcloud2)
 useSejongDic()
+
 
 
 # 폰트 세팅. 띄어쓰기나 대소문자에 민감하다는 점에 주의
@@ -30,6 +31,8 @@ head(data)
 
 write.csv(data,'data/reple.csv',
           row.names=F)
+
+
 data <- readLines('data/reple.csv')
 
 okja <- sapply(data, extractNoun, USE.NAMES = F)
@@ -41,15 +44,14 @@ okja <- str_replace_all(okja,'[^[:alpha:]]','')     # 한글, 영어 외는 삭�
 okja
 
 # 2. gsub() 함수로 바꾸기
-okja <- gsub(' ','', okja)
-okja <- gsub('\\.','', okja)
-okja <- gsub(' ','', okja)
-okja <- gsub("\\'",'', okja)
 okja <- gsub('의미','주제', okja)
 okja <- gsub('감성','감정', okja)
 okja <- gsub('내용','주제', okja)
 okja <- gsub('채식주의자','채식', okja)
 okja <- gsub('채식주의','채식', okja)
+okja <- gsub('재밌었어요','재미', okja)
+okja <- gsub('재밌게','재미', okja)
+okja <- gsub('재밌어요','재미', okja)
 okja
 
 # 필터링으로 지우기
@@ -70,22 +72,15 @@ rev <- read.table('data/reple.txt')
 nrow(rev)
 rev
 wordcount <- table(rev)
-head(sort(wordcount, decreasing = T), 100)
+wordcount <- head(sort(wordcount, decreasing = T), 400)
+class(wordcount)
 
 ## 4. 워드 클라우드를 생성
 
-display.brewer.all()
-palete <- brewer.pal(9, 'Paired')
-wordcloud(names(wordcount), freq=wordcount, scale=c(1.8,0.1), rot.per = 0.5,
-          min.freq = 10, random.order = F, random.color = T, colors = palete)
-legend(0.2, 1, '영화 옥자 분석', cex=1, fill=NA, border=NA,
-       bg='white', text.col='red', text.font=10, box.col='black')
-
-wordcloud2(wordcount, size=2,
-           col='random-dark', backgroundColor='white',
-           rotateRatio=3,
-           fontFamily='배달의민족 연성')
-
-wordcloud2(wordcount, figPath = 'pig.png', size = 0.5, backgroundColor = 'black')
+wordcloud2(data = wordcount,
+           fontFamily='맑은 고딕',
+           color = 'random-light',
+           backgroundColor='black',
+           rotateRatio = 0.5)
 
 

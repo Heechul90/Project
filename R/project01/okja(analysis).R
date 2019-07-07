@@ -7,13 +7,13 @@ library(KoNLP)
 library(wordcloud)
 library(stringr)
 library(dplyr)
-library(lubridate)
 library(RColorBrewer)
-library(ggplot2)
+library(extrafont)
+library(wordcloud2)
 useSejongDic()
+library(ggplot2)
 library(xlsx)
-library(writexl)
-
+library(write)
 # 폰트 세팅. 띄어쓰기나 대소문자에 민감하다는 점에 주의
 windowsFonts(malgun=windowsFont("맑은 고딕"))      # 맑은고딕
 windowsFonts(malgun=windowsFont("나눔고딕"))       # 나눔고딕
@@ -110,15 +110,12 @@ head(okja)
 month_score <- okja %>%
   select(score, month) %>%
   group_by(month) %>%
-  summarise(month_score_mean = mean(score))
+  summarise(month_score_mean = mean(score)) %>%
+  arrange(month_score_mean)
 month_score
 
-display.brewer.all()
-palete <- brewer.pal(12, 'Paired')
 
-
-
-ggplot(month_score, aes(x= month, y= month_score_mean, fill= month)) +
+ggplot(month_score, aes(x= reorder(month, -month_score_mean), y=month_score_mean, fill = month)) +
   geom_bar(stat = 'identity', color = 'black') +
   ggtitle('월별에 따른 평균평점') +
   xlab('월') +
@@ -133,13 +130,11 @@ ggplot(month_score, aes(x= month, y= month_score_mean, fill= month)) +
                                     hjust = 0.5, vjust = 0)) +
   theme(axis.text.x = element_text(angle=90, size = 10, color='black')) +
   theme(axis.text.y = element_text(angle=0, size = 10, color='black')) +
-  theme(legend.title = element_text(face="italic", colour="darkblue",size=10)) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = 'none') + 
   geom_text(aes(y=month_score_mean - 0.2, label= paste(round(month_score_mean,1), '점')),
             color='black', size=5)
 
-# reorder(month, desc(month_score_mean)
-# aes(reorder(job, c('January','February','March','April','May','June','July','August','September','October','November','December'))
-# scale_x_discrete(limits = c("trt1", "trt2", "ctrl"))
 
 # 02. 요일에 따른 평점
 day_score <- okja %>%
@@ -148,11 +143,27 @@ day_score <- okja %>%
   summarise(day_score_mean = mean(score))
 day_score
 
-ggplot(day_score, aes(x= day, y= day_score_mean, fill= day)) +
-  geom_bar(stat = 'identity')
+ggplot(day_score, aes(reorder(day, -day_score_mean), y= day_score_mean, fill= day)) +
+  geom_bar(stat = 'identity') +
+  ggtitle('요일에 따른 평균평점') +
+  xlab('요일') +
+  ylab('평균평점') +
+  theme_classic() +
+  theme_bw(base_family = '맑은 고딕') +
+  theme(plot.title = element_text(size=20, color = 'red',
+                                  hjust = 0.5, vjust=0)) +
+  theme(axis.title.x = element_text(size = 15, color = 'red',
+                                    hjust = 0.5, vjust = 0)) +
+  theme(axis.title.y = element_text(size= 15, color = 'red',
+                                    hjust = 0.5, vjust = 0)) +
+  theme(axis.text.x = element_text(angle=90, size = 10, color='black')) +
+  theme(axis.text.y = element_text(angle=0, size = 10, color='black')) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = 'none') + 
+  geom_text(aes(y=day_score_mean - 0.2, label= paste(round(day_score_mean,1), '점')),
+            color='black', size=5)
 
 # 03. 주말 시간에 따른 평점
-okja
 weekend_score <- okja %>%
   filter(day %in% c('Friday', 'Saturday', 'Sunday')) %>%
   select(time, score) %>%
@@ -161,6 +172,23 @@ weekend_score <- okja %>%
 weekend_score
 
 ggplot(weekend_score, aes(x= time, y= weekend_score_mean, fill= time)) +
-  geom_bar(stat = 'identity')
+  geom_bar(stat = 'identity') +
+  ggtitle('요일에 따른 평균평점') +
+  xlab('요일') +
+  ylab('평균평점') +
+  theme_classic() +
+  theme_bw(base_family = '맑은 고딕') +
+  theme(plot.title = element_text(size=20, color = 'red',
+                                  hjust = 0.5, vjust=0)) +
+  theme(axis.title.x = element_text(size = 15, color = 'red',
+                                    hjust = 0.5, vjust = 0)) +
+  theme(axis.title.y = element_text(size= 15, color = 'red',
+                                    hjust = 0.5, vjust = 0)) +
+  theme(axis.text.x = element_text(angle=0, size = 15, color='black')) +
+  theme(axis.text.y = element_text(angle=0, size = 10, color='black')) +
+  theme(legend.title = element_text(size=10)) +
+  scale_fill_discrete(labels = c('나이트(24:00~)', '모닝(06:00~)', '브런치(10:00~)','데이라이트(13:00~)', '프라임(16:00~)', '문라이트(22:00~)')) +
+  geom_text(aes(y=weekend_score_mean - 0.3, label= paste(round(weekend_score_mean,1), '점')),
+            color='black', size=5)
 
 
