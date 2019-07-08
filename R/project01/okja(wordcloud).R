@@ -72,7 +72,7 @@ nrow(rev)
 rev
 wordcount <- table(rev)
 wordcount <- head(sort(wordcount, decreasing = T), 400)
-class(wordcount)
+wordcount
 
 ## 4. 워드 클라우드를 생성
 
