@@ -104,18 +104,19 @@ head(rawokja)
 
 okja <- rawokja %>%
   select(score, date, time, month, day, fee)
+colnames(okja) <- c('평점', '날짜', '시간대', '월', '요일', '요금')
 head(okja)
 
 # 01. 월별에 따른 평점
 month_score <- okja %>%
-  select(score, month) %>%
-  group_by(month) %>%
-  summarise(month_score_mean = mean(score)) %>%
+  select(평점, 월) %>%
+  group_by(월) %>%
+  summarise(month_score_mean = mean(평점)) %>%
   arrange(month_score_mean)
 month_score
 
 
-ggplot(month_score, aes(x= reorder(month, -month_score_mean), y=month_score_mean, fill = month)) +
+ggplot(month_score, aes(x= reorder(월, -month_score_mean), y=month_score_mean, fill = 월)) +
   geom_bar(stat = 'identity', color = 'black') +
   ggtitle('월별에 따른 평균평점') +
   xlab('월') +
@@ -133,17 +134,18 @@ ggplot(month_score, aes(x= reorder(month, -month_score_mean), y=month_score_mean
   theme(legend.title = element_blank()) +
   theme(legend.position = 'none') + 
   geom_text(aes(y=month_score_mean - 0.2, label= paste(round(month_score_mean,1), '점')),
-            color='black', size=5)
+            color='black', size=4)
 
+#  theme(axis.text.x = labels('7월', '8월', '2월', '3월', '6월', '9월', '1월', '4월', '10월', '5월', '11월', '12월')) +
 
 # 02. 요일에 따른 평점
 day_score <- okja %>%
-  select(day, score) %>%
-  group_by(day) %>%
-  summarise(day_score_mean = mean(score))
+  select(요일, 평점) %>%
+  group_by(요일) %>%
+  summarise(day_score_mean = mean(평점))
 day_score
 
-ggplot(day_score, aes(reorder(day, -day_score_mean), y= day_score_mean, fill= day)) +
+ggplot(day_score, aes(reorder(요일, -day_score_mean), y= day_score_mean, fill= 요일)) +
   geom_bar(stat = 'identity') +
   ggtitle('요일에 따른 평균평점') +
   xlab('요일') +
@@ -165,13 +167,13 @@ ggplot(day_score, aes(reorder(day, -day_score_mean), y= day_score_mean, fill= da
 
 # 03. 주말 시간에 따른 평점
 weekend_score <- okja %>%
-  filter(day %in% c('Friday', 'Saturday', 'Sunday')) %>%
-  select(time, score) %>%
-  group_by(time) %>%
-  summarise(weekend_score_mean = mean(score))
+  filter(요일 %in% c('Friday', 'Saturday', 'Sunday')) %>%
+  select(시간대, 평점) %>%
+  group_by(시간대) %>%
+  summarise(weekend_score_mean = mean(평점))
 weekend_score
 
-ggplot(weekend_score, aes(x= time, y= weekend_score_mean, fill= time)) +
+ggplot(weekend_score, aes(x= 시간대, y= weekend_score_mean, fill= 시간대)) +
   geom_bar(stat = 'identity') +
   ggtitle('요일에 따른 평균평점') +
   xlab('요일') +

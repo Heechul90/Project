@@ -1,8 +1,18 @@
-### 옥자평점 분석(naver) - 종합
+---
+title: "project"
+author: "HyungcheolSon"
+date: '2019 7 8 '
+output: html_document
+---
 
-setwd('D:/Heechul/Project/R/project01')
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+### 옥자평점 분석(naver)
+```{r}
 ## 필요패키지
+
 library(KoNLP)
 library(wordcloud)
 library(stringr)
@@ -10,66 +20,100 @@ library(dplyr)
 library(RColorBrewer)
 library(extrafont)
 library(wordcloud2)
+library(ggplot2)
 useSejongDic()
-
-# 폰트 세팅. 띄어쓰기나 대소문자에 민감하다는 점에 주의
-windowsFonts(malgun=windowsFont("맑은 고딕"))        # 맑은고딕
-windowsFonts(malgun=windowsFont("나눔고딕"))         # 나눔고딕
-windowsFonts(malgun=windowsFont("Arial"))            # 영어폰트
-windowsFonts(malgun=windowsFont("배달의민족 연성"))
+windowsFonts(malgun=windowsFont('맑은 고딕'))        # 맑은고딕
+```
 
 ### 1. Word Cloud 
-# 3. 저장후 테이블로 불러서 공백 지우기
-write(unlist(okja), 'data/reple.txt')
+## 1)파일 불러오기
+```{r}
+data <- readLines('data/reple.csv')
+okja <- sapply(data, extractNoun, USE.NAMES = F)
+okja <- unlist(okja)
+```
+
+## 2) 한글, 영어 외는 삭제
+```{r}
+okja <- str_replace_all(okja,'[^[:alpha:]]','')
+```
+
+## 3) gsub() 함수로 바꾸기
+```{r}
+okja <- gsub('감성','감정', okja)
+okja <- gsub('내용','주제', okja)
+okja <- gsub('채식주의자','채식', okja)
+okja <- gsub('채식주의','채식', okja)
+okja <- gsub('재밌었어요','재미', okja)
+okja <- gsub('재밌게','재미', okja)
+okja <- gsub('재밌어요','재미', okja)
+```
+
+## 4) 필터링으로 지우기
+```{r}
+okja <- Filter(function(x){nchar(x) >= 2}, okja)
+okja <- Filter(function(x){nchar(x) <= 5}, okja)
+```
+
+## 5) 지울 단어 불러와서 반복문으로 지우기
+```{r}
+txt <- readLines('data/okjagsub.txt')
+i <- 1
+for(i in 1 : length(txt)) {
+  okja <- gsub((txt[i]), '', okja)
+}
+```
+
+## 6) 저장후 테이블로 불러서 공백 지우기
+```{r}
 rev <- read.table('data/reple.txt')
-nrow(rev)
-rev
 wordcount <- table(rev)
 wordcount <- head(sort(wordcount, decreasing = T), 400)
-class(wordcount)
+```
 
-## 4. 워드 클라우드를 생성
-
+## 7) 워드 클라우드를 생성
+```{r}
 wordcloud2(data = wordcount,
-           fontFamily='맑은 고딕',
            color = 'random-light',
            backgroundColor='black',
            rotateRatio = 0.5)
+```
 
 
+## 분석
+## 영화 관객의 댓글를 살펴본 결과, 관객들은 배우, 감동,       
+## 자본주의, 연기 등에 대한 댓글을 많이 남겼지만
+## 가장 많이 언급된 단어는 재미였습니다.
 
-## 분석 : 영화 관객의 후기를 살펴본 결과, 영화에 대한 평은 배우, 감동, 자본주의, 연기 등 여러개가 있었지만 
-##        가장 큰 관심은 재미로 나타났다.
-##        그렇다면 이 영화를 언제 봐야 가장 재미를 느낄 수 있는지 분석해보자.
+## 그렇다면 이 영화를 언제 봐야 가장 큰 재미를 느낄 수 있을까?
 
-
+```{r}
 ## 그래프 그리기
 # 가정1 : 영화를 본 시간에 평점을 작성.
 # 가정2 : 평점이 높으면 재미가 있음.
 
 rawokja <- read.csv('data/okja.csv', header = T)
-head(rawokja)
-
 okja <- rawokja %>%
   select(score, date, time, month, day, fee)
+colnames(okja) <- c('평점', '날짜', '시간대', '월', '요일', '요금')
+![text](/path/to/cgvfee.png)
 head(okja)
+```
 
-# 01. 월별에 따른 평점
+## 1) 월별에 따른 평점
+```{r}
 month_score <- okja %>%
-  select(score, month) %>%
-  group_by(month) %>%
-  summarise(month_score_mean = mean(score)) %>%
+  select(평점, 월) %>%
+  group_by(월) %>%
+  summarise(month_score_mean = mean(평점)) %>%
   arrange(month_score_mean)
-month_score
 
-
-ggplot(month_score, aes(x= reorder(month, -month_score_mean), y=month_score_mean, fill = month)) +
+ggplot(month_score, aes(x= reorder(월, -month_score_mean), y=month_score_mean, fill = 월)) +
   geom_bar(stat = 'identity', color = 'black') +
   ggtitle('월별에 따른 평균평점') +
   xlab('월') +
   ylab('평균평점') +
   theme_classic() +
-  theme_bw(base_family = '맑은 고딕') +
   theme(plot.title = element_text(size=20, color = 'red',
                                   hjust = 0.5, vjust=0)) +
   theme(axis.title.x = element_text(size = 15, color = 'red',
@@ -81,23 +125,24 @@ ggplot(month_score, aes(x= reorder(month, -month_score_mean), y=month_score_mean
   theme(legend.title = element_blank()) +
   theme(legend.position = 'none') + 
   geom_text(aes(y=month_score_mean - 0.2, label= paste(round(month_score_mean,1), '점')),
-            color='black', size=5)
-
-
-# 02. 요일에 따른 평점
+            color='black', size=4)
+```
+# 분석 : 7~8월이 각각 평균평점 8.5로 가장 높게 나타났습니다.
+#        따라서 7~8월에 영화를 보는것이 가장 재미를 느낄 수 있다고 판단됩니다.
+<br><br>
+## 2) 요일에 따른 평점
+```{r}
 day_score <- okja %>%
-  select(day, score) %>%
-  group_by(day) %>%
-  summarise(day_score_mean = mean(score))
-day_score
+  select(요일, 평점) %>%
+  group_by(요일) %>%
+  summarise(day_score_mean = mean(평점))
 
-ggplot(day_score, aes(reorder(day, -day_score_mean), y= day_score_mean, fill= day)) +
+ggplot(day_score, aes(reorder(요일, -day_score_mean), y= day_score_mean, fill= 요일)) +
   geom_bar(stat = 'identity') +
   ggtitle('요일에 따른 평균평점') +
   xlab('요일') +
   ylab('평균평점') +
   theme_classic() +
-  theme_bw(base_family = '맑은 고딕') +
   theme(plot.title = element_text(size=20, color = 'red',
                                   hjust = 0.5, vjust=0)) +
   theme(axis.title.x = element_text(size = 15, color = 'red',
@@ -110,31 +155,40 @@ ggplot(day_score, aes(reorder(day, -day_score_mean), y= day_score_mean, fill= da
   theme(legend.position = 'none') + 
   geom_text(aes(y=day_score_mean - 0.2, label= paste(round(day_score_mean,1), '점')),
             color='black', size=5)
-
-# 03. 주말 시간에 따른 평점
+```
+# 분석 : 일요일, 토요일순으로 평점이 높게 나와 주말에 볼 때 평점이 높은것으로 나타났습니다.
+#        따라서 주말에 영화를 보는것이 가장 재미를 느낄 수 있다고 판단됩니다.
+<br><br>
+## 3) 주말 시간에 따른 평점
+```{r}
 weekend_score <- okja %>%
-  filter(day %in% c('Friday', 'Saturday', 'Sunday')) %>%
-  select(time, score) %>%
-  group_by(time) %>%
-  summarise(weekend_score_mean = mean(score))
-weekend_score
+  filter(요일 %in% c('Friday', 'Saturday', 'Sunday')) %>%
+  select(시간대, 평점) %>%
+  group_by(시간대) %>%
+  summarise(weekend_score_mean = mean(평점))
 
-ggplot(weekend_score, aes(x= time, y= weekend_score_mean, fill= time)) +
+ggplot(weekend_score, aes(x= 시간대, y= weekend_score_mean, fill= 시간대)) +
   geom_bar(stat = 'identity') +
   ggtitle('요일에 따른 평균평점') +
   xlab('요일') +
   ylab('평균평점') +
   theme_classic() +
-  theme_bw(base_family = '맑은 고딕') +
   theme(plot.title = element_text(size=20, color = 'red',
                                   hjust = 0.5, vjust=0)) +
   theme(axis.title.x = element_text(size = 15, color = 'red',
                                     hjust = 0.5, vjust = 0)) +
   theme(axis.title.y = element_text(size= 15, color = 'red',
                                     hjust = 0.5, vjust = 0)) +
-  theme(axis.text.x = element_text(angle=0, size = 15, color='black')) +
+  theme(axis.text.x = element_text(angle=0, size = 10, color='black')) +
   theme(axis.text.y = element_text(angle=0, size = 10, color='black')) +
   theme(legend.title = element_text(size=10)) +
   scale_fill_discrete(labels = c('나이트(24:00~)', '모닝(06:00~)', '브런치(10:00~)','데이라이트(13:00~)', '프라임(16:00~)', '문라이트(22:00~)')) +
   geom_text(aes(y=weekend_score_mean - 0.3, label= paste(round(weekend_score_mean,1), '점')),
             color='black', size=5)
+```
+# 분석 : 문라이트 시간대에 평점이 8.7로 가장 높게 나타났습니다.
+
+# 결론 : 영화를 볼 때 가장 큰 재미를 느끼고 싶다면
+#        7~8월에 주말(토요일, 일요일)에 22:00 ~ 24:00시 사이에 보면
+#        가장 큰 재미를 느낄 수 있다고 판단됩니다. 
+<br><br>

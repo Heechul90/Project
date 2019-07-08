@@ -44,7 +44,6 @@ okja <- str_replace_all(okja,'[^[:alpha:]]','')     # 한글, 영어 외는 삭�
 okja
 
 # 2. gsub() 함수로 바꾸기
-okja <- gsub('의미','주제', okja)
 okja <- gsub('감성','감정', okja)
 okja <- gsub('내용','주제', okja)
 okja <- gsub('채식주의자','채식', okja)
