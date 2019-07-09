@@ -74,24 +74,26 @@ okja3$time <- ifelse(okja3$time %in% c(0:5) , '나이트',
               ifelse(okja3$time %in% c(16:21), '프라임', '문라이트')))))
                                                  
 
-okja3$fee <- ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '모닝', 6000,
-             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '브런치', 8000,
-             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '데이라이트', 9000,
-             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '프라임', 9000,
-             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '문라이트', 8000, 7000)))))
+okja3$fee <- ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '모닝', 9000,
+             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '브런치', 11000,
+             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '데이라이트', 11000,
+             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '프라임', 12000,
+             ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday') & okja3$time == '문라이트', 12000, 11000)))))
 
-okja3$fee <- ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '모닝', 7000,
-             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '브런치', 10000,
-             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '데이라이트', 10000,
-             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '프라임', 10000,
-             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '문라이트', 10000,
-             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '나이트', 8000, okja3$fee))))))
+okja3$fee <- ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '모닝', 9000,
+             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '브런치', 13000,
+             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '데이라이트', 13000,
+             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '프라임', 13000,
+             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '문라이트', 13000,
+             ifelse(okja3$day %in% c('Friday', 'Saturday', 'Sunday') & okja3$time == '나이트', 12000, okja3$fee))))))
 
-okja3$주 <- ifelse(okja3$요일 %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday'), '평일', '주말')
-okja3 
+okja3$week <- ifelse(okja3$day %in% c('Monday', 'Tuesday', 'Wednesday', 'Thursday'), '주중', '주말')
+okja3$요금 <- as.numeric(okja$요금) 
 str(okja3)
 View(okja3)
 head(okja3)
+okja4 <- okja3
+colnames(okja3) <- c('댓글', '평점', '닉네임', '날짜', '시간대', '월', '요일', '요금', '주')
 write.csv(okja3, 'data/okja.csv',
           row.names = F)
 
@@ -160,7 +162,7 @@ anova(ow)
 #        따라서 월별에 따른 평점의 차이는 적어도 하나 이상은 차이가 있는것으로 판단됩니다.
 
 
-### 02. 평일과 주말에 따른 평점
+### 02. 주중과 주말에 따른 평점
 week_score <- okja %>%
   select(주, 평점) %>%
   group_by(주) %>%
@@ -169,7 +171,7 @@ week_score
 
 ggplot(week_score, aes(reorder(주, -week_score_mean), y= week_score_mean, fill= 주)) +
   geom_bar(stat = 'identity') +
-  ggtitle('평일과 주말에 따른 평점') +
+  ggtitle('주중과 주말에 따른 평점') +
   xlab('') +
   ylab('평균평점') +
   theme_classic() +
@@ -284,11 +286,10 @@ ggplot(fee_score, aes(reorder(x= 요금, -fee_score_mean), y= fee_score_mean, fi
   geom_text(aes(y=fee_score_mean - 0.3, label= paste(round(fee_score_mean,1), '점')),color='black', size=5)
 
 # 정규성 검토
-shapiro.test(okja$평점[okja$요금 == '10000'])
+shapiro.test(okja$평점[okja$요금 == '13000'])
+shapiro.test(okja$평점[okja$요금 == '12000'])
+shapiro.test(okja$평점[okja$요금 == '11000'])
 shapiro.test(okja$평점[okja$요금 == '9000'])
-shapiro.test(okja$평점[okja$요금 == '8000'])
-shapiro.test(okja$평점[okja$요금 == '7000'])
-shapiro.test(okja$평점[okja$요금 == '6000'])
 
 ## 결론 : 유의수준 0.05보다 작게 나왔으므로, 정규분포를 따르지 않는다.
 
