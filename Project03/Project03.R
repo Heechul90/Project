@@ -107,4 +107,6 @@ durbinWatsonTest(fit3)
 
 # # 유의수준 0.05보다 작아 독립성이 아니다
 
-# 4. 독립성 (indepandence) 
+# 결과적으로 fit3모델은 다중선형회귀분석에 대한 기본가정을 만족하지 못함함
+# AIC값은
+AIC(fit3)
