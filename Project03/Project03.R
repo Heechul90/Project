@@ -8,6 +8,18 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 
+#################################### 큰 흐름
+# 각 변수들이 QTY에 미치는 영향을 찾는 과정 
+# 여러가지를 분석한 결과 
+# PRICE, MAXTEMP, SALEDAY, HOLIDAY이 선택됨
+# 그래서 이를 fit3모델로 만들었음
+# fit3모델을 가지고 정규성, 등분산성, 선형성, 독립성 검정한 결과
+# 만족하지 못함
+# 그래서 그냥 다중회귀식 만들었음
+# 끝
+############################################
+
+
 # 데이터 불러오기
 data_raw <- read.csv('Data/sales.csv')
 
@@ -18,7 +30,7 @@ tail(data_raw)
 # 데이터 스포츠,이온음료로 필터링
 data <- data_raw %>%
   filter(CATEGORY == '스포츠,이온음료')
-data <- data[,-c(2)]
+data <- data[,-c(1,2)]
 head(data)
 str(data)
 
@@ -31,7 +43,21 @@ str(data)
 # RAIN_DAY	강우일수
 # HOLIDAY	휴일일수
 
+# 해당 데이터의 정규성 검토를 함
+shapiro.test(data$QTY)
 
+# p-value 값이 0.001273으로 너무 작아서 로그로 전처리함
+data$QTY <- log10(data$QTY)
+shapiro.test(data$QTY)
+
+# 상과관계 분석
+cor(data)
+
+# ITEM_CNT, SALEDAY, RAIN_DAY 는 0.3~0.7사이로 뚜렷한 양적 선형관계
+# PRICE, HOLIDAY 0.3 이하로 약한상관관계
+# MAXTEMP 강한상관관계를 보이고 있음
+
+######################################################################################
 # 산점도 그려보기
 pairs(data)
 
@@ -46,36 +72,36 @@ anova(fit1)
 # 1. backward elimination
 step(fit1, direction = 'backward')
 
-# 분석결과 ITEM_CNT, SALEDAY, RAIN_DAY 변수가 제거되었다.
+# 분석결과 ITEM_CNT, RAIN_DAY 변수가 제거되었다.
 
 # 2. forward selection
 fit2 <- lm(QTY~1, data = data)
 step(fit2, 
      direction = "forward", 
-     scope = ~YM + ITEM_CNT + PRICE + MAXTEMP + SALEDAY + RAIN_DAY + HOLIDAY)
+     scope = ~ITEM_CNT + PRICE + MAXTEMP + SALEDAY + RAIN_DAY + HOLIDAY)
 
-# 분석결과 ITEM_CNT, SALEDAY, RAIN_DAY 변수가 제거되었다. backward랑 결과가 같음
+# 분석결과 ITEM_CNT, RAIN_DAY 변수가 제거되었다. backward랑 결과가 같음
 
 # 3. stepwise regression
 step(fit1, direction = 'both')
 
-# 분석결과 ITEM_CNT, SALEDAY, RAIN_DAY 변수가 제거되었다. backward랑 결과 같음
+# 분석결과 ITEM_CNT, RAIN_DAY 변수가 제거되었다. backward랑 결과 같음
 
 # 4. All possible regression
 library(leaps)
 subsets1 <- regsubsets(QTY~., data = data,
-                       method = 'seqrep', nbest = 7) 
+                       method = 'seqrep', nbest = 6) 
 plot(subsets1)
 
 subsets2 <- regsubsets(QTY~., data = data,
-                       method = 'exhaustive', nbest = 7) 
+                       method = 'exhaustive', nbest = 6) 
 plot(subsets2)
 
-# 2개 분석결과 ITEM_CNT, SALEDAY, RAIN_DAY 변수가 제거되었다.
+# 2개 분석결과 ITEM_CNT, RAIN_DAY 변수가 제거되었다.
 
-## ITEM_CNT, SALEDAY, RAIN_DAY 변수를 뺀 모델을 fit3로 지정
+## ITEM_CNT, RAIN_DAY 변수를 뺀 모델을 fit3로 지정
 
-(fit3 <- lm(QTY ~ MAXTEMP + YM + PRICE + HOLIDAY, data = data))
+(fit3 <- lm(QTY ~ MAXTEMP + PRICE + HOLIDAY + SALEDAY, data = data))
 summary(fit3)
 
 # 셜명변수가 모두 유의미한 변수이다.
@@ -110,3 +136,8 @@ durbinWatsonTest(fit3)
 # 결과적으로 fit3모델은 다중선형회귀분석에 대한 기본가정을 만족하지 못함함
 # AIC값은
 AIC(fit3)
+
+# 다중회귀식을 만들어서 QTY 예측
+data['pre_QTY'] = (2.328e+03) + (data['MAXTEMP'] * (6.672e+01)) + (data['SALEDAY'] * (1.273e-02)) + (data['PRICE'] * (-3.122e+00)) + (data['HOLIDAY'] * (7.638e+01))
+
+data
