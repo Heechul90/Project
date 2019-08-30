@@ -98,7 +98,7 @@ step(fit1, direction = 'both')
 # 4. All possible regression
 library(leaps)
 subsets1 <- regsubsets(QTY~., data = data,
-                       method = 'seqrep', nbest = 6) 
+                       method = 'seqrep', nbest = 6)  #삭제하는것을 반복
 plot(subsets1)
 
 subsets2 <- regsubsets(QTY~., data = data,
@@ -108,7 +108,7 @@ plot(subsets2)
 # 2개 분석결과 HOLIDAY, SALEDAY, RAINDAY 변수가 제거되었다.
 
 ## HOLIDAY, SALEDAY 변수를 뺀 모델을 fit3로 지정
-(fit3 <- lm(QTY ~ ITEM_CNT + PRICE + MAXTEMP + RAIN_DAY, data = data))
+fit3 <- lm(QTY ~ ITEM_CNT + PRICE + MAXTEMP + RAIN_DAY, data = data)
 summary(fit3)
 
 # 셜명변수가 모두 유의미한 변수이다.
@@ -141,11 +141,11 @@ durbinWatsonTest(fit3)
 # # 유의수준 0.05보다 작아 독립성을 만족하지 못함
 
 # 결과적으로 fit3모델은 정규성을 따르고
-# Global Stat(선형성), Heteroscedasticity (등분상성) 만족하지 못함
+# Global Stat(선형성), Heteroscedasticity (등분산성) 만족하지 못함
 # 독립성 만족하지 못함
 
 ## HOLIDAY, SALEDAY, RAINDAY 변수를 뺀 모델을 fit4로 지정
-(fit4 <- lm(QTY ~ ITEM_CNT + PRICE + MAXTEMP, data = data))
+fit4 <- lm(QTY ~ ITEM_CNT + PRICE + MAXTEMP, data = data)
 summary(fit4)
 
 # 셜명변수가 모두 유의미한 변수이다.
@@ -190,7 +190,7 @@ AIC(fit3, fit4)
 # fit4의 다중회귀식을 만들어서 QTY 예측
 data4 <- data
 data4['pre_QTY'] = round((-1188.2848) + (data4['ITEM_CNT'] * (23.0316)) + (data4['PRICE'] * (0.7479)) + (data4['MAXTEMP'] * (13.6824)), 0)
-data4
+head(data4)
 
 data4['Diff'] <- abs(data4['pre_QTY'] - data4['QTY'])
 data4['ACC'] <- abs((data4['QTY'] - data4['Diff'])) / data4['QTY'] * 100
@@ -202,3 +202,4 @@ ACC_mean <- data4 %>%
   filter(ACC <= 100) %>%
   summarise(avarage=mean(ACC))
 ACC_mean
+  
