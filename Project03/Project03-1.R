@@ -20,7 +20,7 @@ library(ggplot2)
 # Global Stat(선형성), Heteroscedasticity (등분상성) 만족하지 못함
 # 독립성 만족하지 못함
 
-# fit4 모델은
+# fit4 모델은 
 # 결과적으로 fit3모델은 정규성을 따르고
 # Global Stat(선형성), Heteroscedasticity (등분상성) 만족하지 못함
 # 독립성 만족하지 못함
