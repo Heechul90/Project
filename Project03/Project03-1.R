@@ -6,7 +6,7 @@ getwd()
 # 패키지 준비
 library(dplyr)
 library(stringr)
-library(ggplot2)
+library(ggplot2) 
 
 #################################### 큰 흐름
 # 각 변수들이 QTY에 미치는 영향을 찾는 과정 
